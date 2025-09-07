@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Web Assembly Lab - ตอนที่ 1</title>
+</head>
+<body>
+    <h1>Web Assembly Lab - Square Function</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function loadWasm(){
+            let result = await fetch("findsquare.wasm")
+            let compiledmod = await WebAssembly.compile(await result.arrayBuffer())
+            let instance = new WebAssembly.Instance(compiledmod)
+            console.log(instance)
+            
+            // ขั้นตอนที่ 7: ทดลองเรียกใช้ฟังก์ชัน square
+            // ตัวอย่างการเรียกใช้ (uncomment เพื่อทดสอบ)
+            // console.log("Square of 13 =", instance.exports.square(13))
+        }
+        loadWasm()
+    </script>
+</body>
+</html>

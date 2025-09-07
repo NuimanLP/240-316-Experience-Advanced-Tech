@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Web Assembly Lab - ตอนที่ 1 (Step 7)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Web Assembly Lab - Square Function</h1>
+        
+        <div>
+            <label for="numberInput">Enter a number:</label>
+            <input type="number" id="numberInput" value="13">
+            <button onclick="calculateSquare()">Calculate Square</button>
+        </div>
+        
+        <div id="result"></div>
+        
+        <h3>Console Output:</h3>
+        <div id="consoleOutput" style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; font-family: monospace;"></div>
+    </div>
+    
+    <script>
+        let wasmInstance = null;
+        
+        async function loadWasm(){
+            let result = await fetch("findsquare.wasm")
+            let compiledmod = await WebAssembly.compile(await result.arrayBuffer())
+            let instance = new WebAssembly.Instance(compiledmod)
+            
+            // แสดงใน console
+            console.log(instance)
+            
+            // แสดงบนหน้าเว็บ
+            document.getElementById('consoleOutput').innerHTML = 
+                '<strong>WebAssembly Instance loaded!</strong><br>' +
+                'Available exports: ' + Object.keys(instance.exports).join(', ');
+            
+            // เก็บ instance ไว้ใช้งาน
+            wasmInstance = instance;
+            
+            // ทดสอบเรียกใช้ฟังก์ชัน square
+            console.log("Square of 13 =", instance.exports.square(13))
+        }
+        
+        function calculateSquare() {
+            if (!wasmInstance) {
+                alert('WebAssembly not loaded yet!');
+                return;
+            }
+            
+            const input = document.getElementById('numberInput').value;
+            const number = parseInt(input);
+            
+            if (isNaN(number)) {
+                alert('Please enter a valid number');
+                return;
+            }
+            
+            // เรียกใช้ฟังก์ชัน square จาก WebAssembly
+            const result = wasmInstance.exports.square(number);
+            
+            // แสดงผลลัพธ์
+            document.getElementById('result').innerHTML = 
+                `<h3>Result:</h3>
+                <p>Square of ${number} = ${result}</p>
+                <p>${number}² = ${result}</p>`;
+            
+            console.log(`Square of ${number} = ${result}`);
+        }
+        
+        // โหลด WebAssembly เมื่อหน้าเว็บโหลดเสร็จ
+        loadWasm();
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/chav_sir/Library/Mobile Documents/com~apple~CloudDocs/PSU/Y 3 T 1/240-316 EXPERIENCING ADVANCE/SA04/ServerTest2",
+      "program": "/Users/chav_sir/Library/Mobile Documents/com~apple~CloudDocs/PSU/Y 3 T 1/240-316 EXPERIENCING ADVANCE/SA04/ServerTest2/build/Debug/outDebug"
+    }
+  ]
+}

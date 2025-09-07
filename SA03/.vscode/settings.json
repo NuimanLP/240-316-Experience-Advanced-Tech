@@ -1,0 +1,13 @@
+{
+    "julia.useRevise": true,
+    "julia.executablePath": "/opt/homebrew/bin/julia",
+    "jupyter.defaultKernel": "julia-1.11",
+    "julia.execution.resultDisplay": {
+        "showExecuted": true,
+        "showResult": true
+    },
+    "julia.enableTelemetry": false,
+    "files.associations": {
+        "*.jl": "julia"
+    }
+}

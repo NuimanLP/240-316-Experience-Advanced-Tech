@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+   <head>
+      <meta charset="utf-8">
+      <title>WebAssembly Hello World - Emscripten Version</title>
+      <style>
+         div { 
+            font-size : 30px; text-align : center; color:orange; 
+         }
+      </style>
+   </head>
+   <body>
+      <div id="textcontent"></div>
+      <script>
+         // Module object for Emscripten
+         var Module = {
+            onRuntimeInitialized: function() {
+               // Call the C function using ccall
+               const ptr = Module._c_hello();
+               
+               // Read the string from memory
+               let mytext = "";
+               let buffer = new Uint8Array(Module.HEAPU8.buffer, ptr);
+               let i = 0;
+               while (buffer[i] !== 0) {
+                  mytext += String.fromCharCode(buffer[i]);
+                  i++;
+               }
+               
+               console.log(mytext);
+               document.getElementById("textcontent").innerHTML = mytext;
+            }
+         };
+      </script>
+      <script src="firstprog.js"></script>
+   </body>
+</html>
