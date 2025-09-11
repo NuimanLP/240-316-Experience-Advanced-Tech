@@ -1,0 +1,162 @@
+// ========================= AlarmTimer_X6.v =========================
+// นาฬิกาปลุก: กด S5 → นับถอยหลัง X วินาที (X=6) → ถึง 0 ให้เล่นเสียงสองโทนสลับ 4Hz
+// กด S6 เพื่อหยุดเสียงและกลับสู่สภาวะพร้อมเริ่มใหม่
+
+// ------------------ ตัวสร้างเสียงสองโทน สลับทุก 0.25s ------------------
+module TwoToneSwitcher #(
+    parameter integer IN_CLK    = 50_000_000,
+    parameter integer FREQ1_HZ  = 1000,
+    parameter integer FREQ2_HZ  = 8000,
+    parameter integer TEMPO_HZ  = 4          // สลับทุก 0.25s
+)(
+    input  wire clk,
+    input  wire enable,       // 1=เปิดส่งเสียง, 0=ปิดเป็นโลว์
+    output reg  BZ1 = 1'b0
+);
+    localparam integer DIV1   = IN_CLK / (2*FREQ1_HZ);
+    localparam integer DIV2   = IN_CLK / (2*FREQ2_HZ);
+    localparam integer DIVTMP = IN_CLK / (TEMPO_HZ);
+
+    reg [31:0] c1=0, c2=0, ctmp=0;
+    reg s1=1'b0, s2=1'b0;
+    reg sel_tone=1'b0;
+
+    // tempo 4Hz
+    always @(posedge clk) begin
+        if (ctmp >= DIVTMP-1) begin ctmp<=0; sel_tone<=~sel_tone; end
+        else ctmp <= ctmp + 1'b1;
+    end
+
+    // tone1
+    always @(posedge clk) begin
+        if (c1 >= DIV1-1) begin c1<=0; s1<=~s1; end
+        else c1 <= c1 + 1'b1;
+    end
+
+    // tone2
+    always @(posedge clk) begin
+        if (c2 >= DIV2-1) begin c2<=0; s2<=~s2; end
+        else c2 <= c2 + 1'b1;
+    end
+
+    // output (mute เมื่อ enable=0)
+    always @(posedge clk) begin
+        BZ1 <= enable ? (sel_tone ? s2 : s1) : 1'b0;
+    end
+endmodule
+
+// ------------------ debounce + rising-edge (one-shot) ------------------
+module DebounceEdge #(
+    parameter integer IN_CLK = 50_000_000,
+    parameter integer MS     = 5 // หน่วง 5ms
+)(
+    input  wire clk,
+    input  wire btn_n,     // ปุ่ม active-low (กด=0) ถ้าบอร์ดเป็น active-high ให้กลับขาเอง
+    output reg  rise = 1'b0
+);
+    localparam integer LIM = (IN_CLK/1000)*MS;
+    reg sync0=1'b1, sync1=1'b1;
+    reg [31:0] dc=0;
+    reg stable=1'b1, stable_d=1'b1;
+
+    // ซิงค์เข้าคลอก & กลับลอจิกให้ active-high ภายใน
+    wire btn = ~sync1; // ถ้าปุ่มเป็น active-low ภายนอก
+    always @(posedge clk) begin
+        sync0 <= btn_n;
+        sync1 <= sync0;
+    end
+
+    // debounce
+    always @(posedge clk) begin
+        if (btn != stable) begin
+            if (dc >= LIM) begin
+                stable   <= btn;
+                dc       <= 0;
+            end else dc <= dc + 1'b1;
+        end else dc <= 0;
+    end
+
+    // rising-edge (จาก 0→1 ของปุ่มหลัง debounce)
+    always @(posedge clk) begin
+        stable_d <= stable;
+        rise     <= (stable & ~stable_d);
+    end
+endmodule
+
+// ------------------ ตัวแบ่งนาฬิกา 1Hz สำหรับนับวินาที ------------------
+module Tick1Hz #(
+    parameter integer IN_CLK = 50_000_000
+)(
+    input  wire clk,
+    output reg  tick = 1'b0
+);
+    localparam integer DIV = IN_CLK - 1;
+    reg [31:0] c=0;
+    always @(posedge clk) begin
+        if (c >= DIV) begin c<=0; tick<=1'b1; end
+        else begin c<=c+1'b1; tick<=1'b0; end
+    end
+endmodule
+
+// ------------------ Top: นาฬิกาปลุก X=6 วินาที ------------------
+module AlarmTimer_X6 #(
+    parameter integer IN_CLK = 50_000_000,
+    parameter integer X_SEC  = 6          // จากรหัส 066 → X=6
+)(
+    input  wire clk,        // 50 MHz
+    input  wire S5_n,       // ปุ่มเริ่ม (active-low)
+    input  wire S6_n,       // ปุ่มหยุดเสียง (active-low)
+    output wire BZ1,        // ไป Active buzzer (ผ่าน R 200Ω)
+    output reg  [7:0] sec_left = 0, // (ออปชัน) เอาไปโชว์ LED/7-seg ได้
+    output reg  alarm_on = 1'b0     // สถานะเสียงกำลังดัง
+);
+    // ปุ่มแบบ edge หลัง debounce
+    wire start_pulse, stop_pulse;
+    DebounceEdge #(IN_CLK, 5) db_start(.clk(clk), .btn_n(S5_n), .rise(start_pulse));
+    DebounceEdge #(IN_CLK, 5) db_stop (.clk(clk), .btn_n(S6_n), .rise(stop_pulse));
+
+    // 1Hz tick
+    wire tick1s;
+    Tick1Hz #(IN_CLK) t1(.clk(clk), .tick(tick1s));
+
+    // เครื่องสถานะ
+    typedef enum logic [1:0] {IDLE=2'd0, COUNT=2'd1, ALARM=2'd2} state_t;
+    state_t st = IDLE;
+
+    // นับถอยหลัง
+    always @(posedge clk) begin
+        case (st)
+            IDLE: begin
+                alarm_on <= 1'b0;
+                sec_left <= X_SEC;
+                if (start_pulse) st <= COUNT;
+            end
+            COUNT: begin
+                if (tick1s) begin
+                    if (sec_left > 0) sec_left <= sec_left - 1'b1;
+                    if (sec_left == 1) st <= ALARM; // จะเหลือ 0 ในสัญญาณถัดไป
+                end
+            end
+            ALARM: begin
+                alarm_on <= 1'b1;      // เปิดเสียง
+                if (stop_pulse) begin  // S6 เพื่อหยุดและกลับพร้อมเริ่มใหม่
+                    alarm_on <= 1'b0;
+                    st       <= IDLE;
+                end
+            end
+            default: st <= IDLE;
+        endcase
+    end
+
+    // ตัวสร้างเสียงสองโทน (ทดลองที่ 2)
+    TwoToneSwitcher #(
+        .IN_CLK(IN_CLK),
+        .FREQ1_HZ(1000),
+        .FREQ2_HZ(8000),
+        .TEMPO_HZ(4)
+    ) tone (
+        .clk(clk),
+        .enable(alarm_on),
+        .BZ1(BZ1)
+    );
+endmodule

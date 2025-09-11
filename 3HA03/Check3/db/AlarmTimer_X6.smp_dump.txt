@@ -1,0 +1,6 @@
+
+State Machine - |AlarmTimer_X6|st
+Name st.IDLE st.ALARM st.COUNT 
+st.IDLE 0 0 0 
+st.COUNT 1 0 1 
+st.ALARM 1 1 0 
