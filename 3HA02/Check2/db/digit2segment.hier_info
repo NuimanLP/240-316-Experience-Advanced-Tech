@@ -1,0 +1,44 @@
+|digit2segment
+clk => segmentID[0].CLK
+clk => segmentID[1].CLK
+clk => clkRefresh[0].CLK
+clk => clkRefresh[1].CLK
+clk => clkRefresh[2].CLK
+clk => clkRefresh[3].CLK
+clk => clkRefresh[4].CLK
+clk => clkRefresh[5].CLK
+clk => clkRefresh[6].CLK
+clk => clkRefresh[7].CLK
+clk => clkRefresh[8].CLK
+clk => clkRefresh[9].CLK
+clk => clkRefresh[10].CLK
+clk => clkRefresh[11].CLK
+clk => clkRefresh[12].CLK
+clk => clkRefresh[13].CLK
+clk => clkRefresh[14].CLK
+clk => clkRefresh[15].CLK
+clk => clkRefresh[16].CLK
+clk => clkRefresh[17].CLK
+clk => clkRefresh[18].CLK
+clk => clkRefresh[19].CLK
+clk => clkRefresh[20].CLK
+clk => clkRefresh[21].CLK
+clk => clkRefresh[22].CLK
+clk => clkRefresh[23].CLK
+clk => clkRefresh[24].CLK
+clk => clkRefresh[25].CLK
+clk => clkRefresh[26].CLK
+segmentShow[0] <= WideOr3.DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[1] <= WideOr2.DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[2] <= WideOr1.DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[3] <= WideOr0.DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[4] <= num.0010.DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[5] <= abcdefg.DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[6] <= abcdefg.DB_MAX_OUTPUT_PORT_TYPE
+dp <= <GND>
+segment1 <= Decoder0.DB_MAX_OUTPUT_PORT_TYPE
+segment2 <= Decoder0.DB_MAX_OUTPUT_PORT_TYPE
+segment3 <= Decoder0.DB_MAX_OUTPUT_PORT_TYPE
+segment4 <= Decoder0.DB_MAX_OUTPUT_PORT_TYPE
+
+

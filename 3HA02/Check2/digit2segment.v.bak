@@ -1,0 +1,41 @@
+module digit2segment(
+    input  clk,
+    output segment1, segment2, segment3, segment4, dp,
+    output [6:0] segmentShow
+);
+
+reg [3:0] num;        // temporary number (0..9)
+reg [6:0] abcdefg;    // bits a..g (1 = on)
+
+always @(posedge clk) begin
+    num = 1;  // ตัวอย่าง: แสดงเลข 1 (เปลี่ยนเป็นเลขอื่นได้)
+
+    //-------- Integer to 7-segment (common-cathode, a b c d e f g) ----
+    case (num)
+        1: abcdefg = 7'b0110000;
+        2: abcdefg = 7'b1101101;
+        3: abcdefg = 7'b1111001;
+        4: abcdefg = 7'b0110011;
+        5: abcdefg = 7'b1011011;
+        6: abcdefg = 7'b1011111;
+        7: abcdefg = 7'b1110000;
+        8: abcdefg = 7'b1111111;
+        9: abcdefg = 7'b1111011;
+        0: abcdefg = 7'b1111110;
+        default: abcdefg = 7'b0000000; // ดับทั้งหมดหากค่านอกช่วง
+    endcase
+end
+
+// เปิดทุกหลักค้างไว้ (แสดงเลขเดียวกันทุกหลัก) สำหรับคำสั่งที่ 1
+assign segment1 = 1'b1;
+assign segment2 = 1'b1;
+assign segment3 = 1'b1;
+assign segment4 = 1'b1;
+
+// ไม่ใช้จุดทศนิยม
+assign dp = 1'b0;
+
+// ส่งแพทเทิร์นไปยัง 7-seg
+assign segmentShow = abcdefg;
+
+endmodule

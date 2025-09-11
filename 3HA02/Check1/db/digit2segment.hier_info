@@ -1,0 +1,23 @@
+|digit2segment
+clk => abcdefg[0].CLK
+clk => abcdefg[1].CLK
+clk => abcdefg[2].CLK
+clk => abcdefg[3].CLK
+clk => abcdefg[4].CLK
+clk => abcdefg[5].CLK
+clk => abcdefg[6].CLK
+clk => num~1.DATAIN
+segment1 <= <VCC>
+segment2 <= <VCC>
+segment3 <= <VCC>
+segment4 <= <VCC>
+dp <= <GND>
+segmentShow[0] <= abcdefg[0].DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[1] <= abcdefg[1].DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[2] <= abcdefg[2].DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[3] <= abcdefg[3].DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[4] <= abcdefg[4].DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[5] <= abcdefg[5].DB_MAX_OUTPUT_PORT_TYPE
+segmentShow[6] <= abcdefg[6].DB_MAX_OUTPUT_PORT_TYPE
+
+
